@@ -1,6 +1,11 @@
 import configPromise from "@payload-config";
 import { getPayload } from "payload";
 
+/**
+ * Fetches category data from the Payload CMS and renders it as formatted JSON in a styled React component.
+ *
+ * @returns A JSX element displaying the retrieved categories data.
+ */
 export default async function Home() {
   const payload = await getPayload({
     config: configPromise,
