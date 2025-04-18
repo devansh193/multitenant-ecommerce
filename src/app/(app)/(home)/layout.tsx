@@ -1,9 +1,13 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Footer } from "./footer";
-import { Navbar } from "./navbar";
-import { SearchFilterLoading, SearchFilters } from "./search-filter";
+import { Footer } from "@/modules/home/ui/components/footer";
+
+import {
+  SearchFilterLoading,
+  SearchFilters,
+} from "@/modules/home/ui/components/search-filter";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { Suspense } from "react";
+import { Navbar } from "@/modules/home/ui/components/navbar";
 
 interface LayoutProps {
   children: React.ReactNode;
