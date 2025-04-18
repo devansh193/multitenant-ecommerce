@@ -1,5 +1,6 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
+
 const categories = [
   {
     name: "All",
@@ -11,17 +12,11 @@ const categories = [
     slug: "business-money",
     subcategories: [
       { name: "Accounting", slug: "accounting" },
-      {
-        name: "Entrepreneurship",
-        slug: "entrepreneurship",
-      },
+      { name: "Entrepreneurship", slug: "entrepreneurship" },
       { name: "Gigs & Side Projects", slug: "gigs-side-projects" },
       { name: "Investing", slug: "investing" },
       { name: "Management & Leadership", slug: "management-leadership" },
-      {
-        name: "Marketing & Sales",
-        slug: "marketing-sales",
-      },
+      { name: "Marketing & Sales", slug: "marketing-sales" },
       { name: "Networking, Careers & Jobs", slug: "networking-careers-jobs" },
       { name: "Personal Finance", slug: "personal-finance" },
       { name: "Real Estate", slug: "real-estate" },
@@ -140,20 +135,16 @@ const seed = async () => {
   const payload = await getPayload({ config });
 
   for (const category of categories) {
-    const existingParent = await payload.find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: category.slug,
-        },
-      },
-    });
+    // Check if parent category already exists
+    let parentCategory = (
+      await payload.find({
+        collection: "categories",
+        where: { slug: { equals: category.slug } },
+      })
+    ).docs[0];
 
-    let parentCategory;
-
-    if (existingParent.docs.length > 0) {
-      parentCategory = existingParent.docs[0];
-    } else {
+    // Create if not exists
+    if (!parentCategory) {
       parentCategory = await payload.create({
         collection: "categories",
         data: {
@@ -163,35 +154,44 @@ const seed = async () => {
           parent: null,
         },
       });
+      console.log(`Created category: ${category.name}`);
+    } else {
+      console.log(`Category already exists: ${category.name}`);
     }
 
-    for (const subcategory of category.subcategories || []) {
-      const existingSub = await payload.find({
-        collection: "categories",
-        where: {
-          slug: {
-            equals: subcategory.slug,
-          },
-        },
-      });
-
-      if (existingSub.docs.length === 0) {
-        await payload.create({
+    // Handle subcategories
+    const subcategories = category.subcategories || [];
+    await Promise.all(
+      subcategories.map(async (subcategory) => {
+        const exists = await payload.find({
           collection: "categories",
-          data: {
-            name: subcategory.name,
-            slug: subcategory.slug,
-            parent: parentCategory.id,
-          },
+          where: { slug: { equals: subcategory.slug } },
         });
-      }
-    }
+
+        if (exists.docs.length === 0) {
+          await payload.create({
+            collection: "categories",
+            data: {
+              name: subcategory.name,
+              slug: subcategory.slug,
+              parent: parentCategory.id,
+            },
+          });
+          console.log(`  ➤ Created subcategory: ${subcategory.name}`);
+        } else {
+          console.log(`  ➤ Subcategory already exists: ${subcategory.name}`);
+        }
+      })
+    );
   }
 };
 
-try {
-  await seed();
-} catch (error) {
-  console.log(error);
-}
-process.exit(0);
+seed()
+  .then(() => {
+    console.log("Seeding completed ✅");
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("Seeding failed ❌", err);
+    process.exit(1);
+  });
