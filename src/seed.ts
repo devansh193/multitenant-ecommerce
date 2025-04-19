@@ -134,8 +134,30 @@ const categories = [
 const seed = async () => {
   const payload = await getPayload({ config });
 
+  const adminTenant = await payload.create({
+    collection: "tenants",
+    data: {
+      name: "admin",
+      slug: "admin",
+      stripeAccountId: "admin",
+    },
+  });
+  await payload.create({
+    collection: "users",
+    data: {
+      email: "admin@demo.com",
+      password: "password",
+      roles: ["super-admin"],
+      username: "admin",
+      tenants: [
+        {
+          tenant: adminTenant.id,
+        },
+      ],
+    },
+  });
+
   for (const category of categories) {
-    // Check if parent category already exists
     let parentCategory = (
       await payload.find({
         collection: "categories",
@@ -143,7 +165,6 @@ const seed = async () => {
       })
     ).docs[0];
 
-    // Create if not exists
     if (!parentCategory) {
       parentCategory = await payload.create({
         collection: "categories",
@@ -159,7 +180,6 @@ const seed = async () => {
       console.log(`Category already exists: ${category.name}`);
     }
 
-    // Handle subcategories
     const subcategories = category.subcategories || [];
     await Promise.all(
       subcategories.map(async (subcategory) => {

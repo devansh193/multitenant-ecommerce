@@ -27,12 +27,26 @@ export const authRouter = createTRPCRouter({
           message: "Username already taken",
         });
       }
+      const tenant = await ctx.db.create({
+        collection: "tenants",
+        data: {
+          name: input.username,
+          slug: input.username,
+          stripeAccountId: "mock",
+        },
+      });
+
       await ctx.db.create({
         collection: "users",
         data: {
           email: input.email,
           username: input.username,
           password: input.password, //Automatically hashed.
+          tenants: [
+            {
+              tenant: tenant.id,
+            },
+          ],
         },
       });
       //   After user is registered attempt to login
