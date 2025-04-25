@@ -120,11 +120,6 @@ export const productsRouter = createTRPCRouter({
         page: input.cursor,
         limit: input.limit,
       });
-      console.log(
-        data.docs.map((doc) => {
-          console.log(doc.tenant);
-        })
-      );
       return {
         ...data,
         docs: data.docs.map((doc) => ({
