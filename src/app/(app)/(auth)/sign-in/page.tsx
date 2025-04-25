@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { SigninView } from "@/modules/auth/ui/views/sigin-in-view";
 import { caller } from "@/trpc/server";
 import { redirect } from "next/navigation";
